@@ -83,6 +83,18 @@ class ModelWrapper(LightningModule):
         # Log any custom metrics implemented by subclass
         if hasattr(self, "log_custom_metrics"):
             self.log_custom_metrics(preds, targets, stage)
+    
+    def transfer_batch_to_device(self, batch, device, dataloader_idx):
+        inputs, targets = batch
+        for k, v in inputs.items():
+            if isinstance(v, torch.Tensor):
+                inputs[k] = v.to(device)
+        for k, v in targets.items():
+            if isinstance(v, list) and len(v) > 0 and v[0].is_sparse:
+                targets[k] = torch.stack([x.to_dense() for x in v]).to(device)
+            elif isinstance(v, torch.Tensor):
+                targets[k] = v.to(device)
+        return inputs, targets
 
     def training_step(self, batch: tuple[dict[str, Tensor], dict[str, Tensor]], batch_idx: int) -> dict[str, Tensor] | None:
         inputs, targets = batch
