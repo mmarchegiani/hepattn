@@ -292,7 +292,7 @@ class Attention(nn.Module):
             k_flat = k_flat.to(torch.bfloat16)
             v_flat = v_flat.to(torch.bfloat16)
         out = self.attn(q_flat, k_flat, v_flat, cu_seqlens, cu_seqlens, max_seqlen, max_seqlen, window_size=self.window_size)
-        return out.view(q.shape[0], -1, self.dim)
+        return out.reshape(q.shape[0], -1, self.dim)
 
     def forward(
         self,
